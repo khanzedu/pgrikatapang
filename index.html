@@ -1,0 +1,442 @@
+import React, { useState, useEffect } from 'react';
+import { 
+  UserPlus, 
+  Database, 
+  MessageCircle, 
+  Upload, 
+  Users, 
+  Eye, 
+  CheckCircle,
+  Image as ImageIcon
+} from 'lucide-react';
+
+export default function App() {
+  const [activeMenu, setActiveMenu] = useState('form');
+  const [members, setMembers] = useState([]);
+  const [visitorCount, setVisitorCount] = useState(0);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [showSuccess, setShowSuccess] = useState(false);
+
+  // Form states
+  const [formData, setFormData] = useState({
+    namaLengkap: '',
+    email: '',
+    nomorKTA: '',
+    status: 'Aktif',
+    asalSekolah: '',
+    asalGugus: '',
+    fotoFile: null,
+    fotoPreview: null
+  });
+
+  // Simulasikan jumlah pengunjung saat pertama kali dimuat
+  useEffect(() => {
+    // Generate random visitors between 1000 - 5000 for demo purposes
+    const randomVisitors = Math.floor(Math.random() * 4000) + 1000;
+    setVisitorCount(randomVisitors);
+  }, []);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleFileChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Membuat URL sementara untuk preview gambar
+      const previewUrl = URL.createObjectURL(file);
+      setFormData(prev => ({ 
+        ...prev, 
+        fotoFile: file,
+        fotoPreview: previewUrl
+      }));
+    }
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+
+    // Simulasikan proses pengiriman data
+    setTimeout(() => {
+      const newMember = {
+        id: Date.now(),
+        ...formData,
+        tanggalDaftar: new Date().toLocaleDateString('id-ID', {
+            day: 'numeric', month: 'long', year: 'numeric'
+        })
+      };
+
+      setMembers(prev => [newMember, ...prev]);
+      setIsSubmitting(false);
+      setShowSuccess(true);
+
+      // Reset form
+      setFormData({
+        namaLengkap: '',
+        email: '',
+        nomorKTA: '',
+        status: 'Aktif',
+        asalSekolah: '',
+        asalGugus: '',
+        fotoFile: null,
+        fotoPreview: null
+      });
+
+      // Hilangkan pesan sukses dan pindah ke menu database setelah 2 detik
+      setTimeout(() => {
+        setShowSuccess(false);
+        setActiveMenu('database');
+      }, 2000);
+    }, 800);
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-50 font-sans text-slate-800 pb-20">
+      {/* Header & Navigation */}
+      <header className="bg-white shadow-sm sticky top-0 z-40">
+        <div className="max-w-6xl mx-auto px-4 py-4 sm:py-6">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+            {/* Logo and Title */}
+            <div className="flex items-center gap-4">
+              <img 
+                src="https://pgrikotasemarang.org/assets/upload/image/Logo.jpg" 
+                alt="Logo PGRI" 
+                className="w-16 h-16 object-contain rounded-full border-2 border-slate-100 shadow-sm"
+                onError={(e) => {
+                  e.target.onerror = null;
+                  e.target.src = "https://via.placeholder.com/64?text=PGRI";
+                }}
+              />
+              <div className="text-center md:text-left">
+                <h1 className="text-xl md:text-2xl font-bold text-slate-800 leading-tight">
+                  PGRI Kecamatan Katapang
+                </h1>
+                <p className="text-sm text-slate-500">Sistem Informasi & Data Anggota</p>
+              </div>
+            </div>
+
+            {/* Navigation Tabs */}
+            <nav className="flex bg-slate-100 p-1 rounded-lg w-full md:w-auto">
+              <button
+                onClick={() => setActiveMenu('form')}
+                className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-md text-sm font-medium transition-all ${
+                  activeMenu === 'form' 
+                    ? 'bg-white text-blue-600 shadow-sm' 
+                    : 'text-slate-600 hover:text-blue-600 hover:bg-slate-200'
+                }`}
+              >
+                <UserPlus size={18} />
+                <span className="hidden sm:inline">Formulir</span>
+                <span className="sm:hidden">Form</span>
+              </button>
+              <button
+                onClick={() => setActiveMenu('database')}
+                className={`flex-1 md:flex-none flex items-center justify-center gap-2 px-6 py-2.5 rounded-md text-sm font-medium transition-all ${
+                  activeMenu === 'database' 
+                    ? 'bg-white text-blue-600 shadow-sm' 
+                    : 'text-slate-600 hover:text-blue-600 hover:bg-slate-200'
+                }`}
+              >
+                <Database size={18} />
+                Database
+              </button>
+            </nav>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <main className="max-w-6xl mx-auto px-4 py-8">
+        {/* Stats Row */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center gap-4">
+            <div className="p-3 bg-blue-50 text-blue-600 rounded-lg">
+              <Users size={24} />
+            </div>
+            <div>
+              <p className="text-sm text-slate-500 font-medium">Total Anggota</p>
+              <p className="text-2xl font-bold text-slate-800">{members.length}</p>
+            </div>
+          </div>
+          <div className="bg-white p-4 rounded-xl shadow-sm border border-slate-100 flex items-center gap-4">
+            <div className="p-3 bg-emerald-50 text-emerald-600 rounded-lg">
+              <Eye size={24} />
+            </div>
+            <div>
+              <p className="text-sm text-slate-500 font-medium">Kunjungan Web</p>
+              <p className="text-2xl font-bold text-slate-800">{visitorCount.toLocaleString('id-ID')}</p>
+            </div>
+          </div>
+        </div>
+
+        {/* View Switcher */}
+        {activeMenu === 'form' ? (
+          /* FORM VIEW */
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden max-w-3xl mx-auto relative">
+            
+            {showSuccess && (
+              <div className="absolute inset-0 bg-white/90 backdrop-blur-sm z-10 flex flex-col items-center justify-center">
+                <CheckCircle size={64} className="text-green-500 mb-4 animate-bounce" />
+                <h3 className="text-2xl font-bold text-slate-800 mb-2">Pendaftaran Berhasil!</h3>
+                <p className="text-slate-600">Mengalihkan ke database...</p>
+              </div>
+            )}
+
+            <div className="bg-blue-600 p-6 text-white">
+              <h2 className="text-xl font-bold">Form Pendataan Anggota PGRI Kecamatan Katapang</h2>
+              <p className="text-blue-100 text-sm mt-1">Silakan isi data diri Anda dengan lengkap dan benar.</p>
+            </div>
+            
+            <form onSubmit={handleSubmit} className="p-6 md:p-8 space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                
+                {/* Nama Lengkap */}
+                <div className="md:col-span-2">
+                  <label htmlFor="namaLengkap" className="block text-sm font-semibold text-slate-700 mb-2">Nama Lengkap beserta Gelar <span className="text-red-500">*</span></label>
+                  <input 
+                    type="text" 
+                    id="namaLengkap"
+                    name="namaLengkap"
+                    required
+                    value={formData.namaLengkap}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    placeholder="Contoh: Budi Santoso, S.Pd., M.Pd."
+                  />
+                </div>
+
+                {/* E-Mail Aktif */}
+                <div className="md:col-span-2">
+                  <label htmlFor="email" className="block text-sm font-semibold text-slate-700 mb-2">E-Mail Aktif <span className="text-red-500">*</span></label>
+                  <input 
+                    type="email" 
+                    id="email"
+                    name="email"
+                    required
+                    value={formData.email}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    placeholder="Contoh: emailAnda@domain.com"
+                  />
+                </div>
+
+                {/* Nomor KTA */}
+                <div>
+                  <label htmlFor="nomorKTA" className="block text-sm font-semibold text-slate-700 mb-2">Nomor KTA PGRI <span className="text-red-500">*</span></label>
+                  <input 
+                    type="text" 
+                    id="nomorKTA"
+                    name="nomorKTA"
+                    required
+                    value={formData.nomorKTA}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    placeholder="Masukkan Nomor KTA"
+                  />
+                </div>
+
+                {/* Status */}
+                <div>
+                  <label htmlFor="status" className="block text-sm font-semibold text-slate-700 mb-2">Status Anggota <span className="text-red-500">*</span></label>
+                  <select 
+                    id="status"
+                    name="status"
+                    value={formData.status}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white transition-colors"
+                  >
+                    <option value="Aktif">Aktif</option>
+                    <option value="Tidak Aktif">Tidak Aktif</option>
+                  </select>
+                </div>
+
+                {/* Catatan KTA */}
+                <div className="md:col-span-2 bg-yellow-50 border-l-4 border-yellow-400 p-4 rounded-r-lg">
+                  <p className="text-sm text-yellow-800">
+                    <strong>Catatan:</strong> Jika Belum Memiliki KTA Silahkan isi dengan Angka 0 dan Pilih Status Tidak Aktif.
+                  </p>
+                </div>
+
+                {/* Asal Sekolah */}
+                <div>
+                  <label htmlFor="asalSekolah" className="block text-sm font-semibold text-slate-700 mb-2">Asal Sekolah (Unit Kerja) <span className="text-red-500">*</span></label>
+                  <input 
+                    type="text" 
+                    id="asalSekolah"
+                    name="asalSekolah"
+                    required
+                    value={formData.asalSekolah}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    placeholder="Contoh: SDN 1 Katapang"
+                  />
+                </div>
+
+                {/* Asal Gugus */}
+                <div>
+                  <label htmlFor="asalGugus" className="block text-sm font-semibold text-slate-700 mb-2">Asal Gugus <span className="text-red-500">*</span></label>
+                  <input 
+                    type="text" 
+                    id="asalGugus"
+                    name="asalGugus"
+                    required
+                    value={formData.asalGugus}
+                    onChange={handleInputChange}
+                    className="w-full px-4 py-3 rounded-lg border border-slate-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors"
+                    placeholder="Contoh: Gugus 01"
+                  />
+                </div>
+
+                {/* Foto Upload */}
+                <div className="md:col-span-2">
+                  <label className="block text-sm font-semibold text-slate-700 mb-2">Foto Pasfoto PGRI <span className="text-red-500">*</span></label>
+                  <div className="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-lg hover:border-blue-400 transition-colors bg-slate-50">
+                    <div className="space-y-2 text-center">
+                      {formData.fotoPreview ? (
+                        <div className="mx-auto w-32 h-40 relative rounded overflow-hidden shadow-sm">
+                           <img src={formData.fotoPreview} alt="Preview" className="w-full h-full object-cover" />
+                        </div>
+                      ) : (
+                        <Upload className="mx-auto h-12 w-12 text-slate-400" />
+                      )}
+                      
+                      <div className="flex justify-center text-sm text-slate-600 mt-4">
+                        <label htmlFor="foto-upload" className="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-blue-500 px-3 py-1 border shadow-sm">
+                          <span>{formData.fotoFile ? 'Ganti Foto' : 'Unggah Foto'}</span>
+                          <input 
+                            id="foto-upload" 
+                            name="foto-upload" 
+                            type="file" 
+                            accept="image/*" 
+                            className="sr-only" 
+                            required={!formData.fotoFile}
+                            onChange={handleFileChange}
+                          />
+                        </label>
+                      </div>
+                      <p className="text-xs text-slate-500">PNG, JPG, JPEG (Maks. 2MB)</p>
+                    </div>
+                  </div>
+                </div>
+
+              </div>
+
+              <div className="pt-4 border-t border-slate-100">
+                <button 
+                  type="submit" 
+                  disabled={isSubmitting}
+                  className="w-full md:w-auto md:min-w-[200px] flex justify-center items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 px-6 rounded-lg shadow-sm transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                >
+                  {isSubmitting ? (
+                    <>
+                      <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Menyimpan...
+                    </>
+                  ) : (
+                    <>
+                      <Database size={18} />
+                      Simpan Data Anggota
+                    </>
+                  )}
+                </button>
+              </div>
+            </form>
+          </div>
+        ) : (
+          /* DATABASE VIEW */
+          <div className="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+            <div className="bg-slate-800 p-6 text-white flex justify-between items-center">
+              <div>
+                <h2 className="text-xl font-bold">Database Anggota PGRI</h2>
+                <p className="text-slate-300 text-sm mt-1">Daftar anggota Kecamatan Katapang yang telah terdaftar.</p>
+              </div>
+              <div className="bg-slate-700 px-4 py-2 rounded-lg text-sm font-semibold">
+                Total: {members.length}
+              </div>
+            </div>
+
+            <div className="overflow-x-auto">
+              <table className="w-full text-left border-collapse">
+                <thead>
+                  <tr className="bg-slate-50 border-b border-slate-200 text-slate-600 text-sm">
+                    <th className="p-4 font-semibold w-16">Foto</th>
+                    <th className="p-4 font-semibold">Nama Lengkap</th>
+                    <th className="p-4 font-semibold">Nomor KTA</th>
+                    <th className="p-4 font-semibold">Instansi</th>
+                    <th className="p-4 font-semibold">Gugus</th>
+                    <th className="p-4 font-semibold w-32">Status</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {members.length === 0 ? (
+                    <tr>
+                      <td colSpan="6" className="p-12 text-center text-slate-500">
+                        <div className="flex flex-col items-center justify-center gap-3">
+                          <Users size={48} className="text-slate-300" />
+                          <p className="text-lg font-medium text-slate-600">Belum ada data pendaftar</p>
+                          <button 
+                            onClick={() => setActiveMenu('form')}
+                            className="mt-2 text-blue-600 hover:text-blue-700 font-medium text-sm underline"
+                          >
+                            Kembali ke Form Pendaftaran
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    members.map((member) => (
+                      <tr key={member.id} className="hover:bg-slate-50 transition-colors">
+                        <td className="p-4">
+                          <div className="w-12 h-14 bg-slate-200 rounded overflow-hidden flex items-center justify-center border border-slate-300 shadow-sm">
+                            {member.fotoPreview ? (
+                              <img src={member.fotoPreview} alt={member.namaLengkap} className="w-full h-full object-cover" />
+                            ) : (
+                              <ImageIcon className="text-slate-400" size={20} />
+                            )}
+                          </div>
+                        </td>
+                        <td className="p-4">
+                          <p className="font-semibold text-slate-800">{member.namaLengkap}</p>
+                          <p className="text-xs text-slate-600">{member.email}</p>
+                          <p className="text-xs text-slate-400 mt-1">Terdaftar: {member.tanggalDaftar}</p>
+                        </td>
+                        <td className="p-4 font-mono text-sm text-slate-600">{member.nomorKTA}</td>
+                        <td className="p-4 text-slate-700">{member.asalSekolah}</td>
+                        <td className="p-4 text-slate-700">{member.asalGugus}</td>
+                        <td className="p-4">
+                          <span className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
+                            member.status === 'Aktif' 
+                              ? 'bg-green-100 text-green-700 border border-green-200' 
+                              : 'bg-red-100 text-red-700 border border-red-200'
+                          }`}>
+                            {member.status}
+                          </span>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        )}
+      </main>
+
+      {/* Floating WhatsApp Button */}
+      <a 
+        href="https://wa.me/6285797817050" 
+        target="_blank" 
+        rel="noopener noreferrer"
+        className="fixed bottom-6 right-6 z-50 bg-[#25D366] hover:bg-[#20bd5a] text-white p-4 rounded-full shadow-xl shadow-green-500/30 flex items-center gap-3 transition-transform hover:scale-105 group"
+        title="Chat Admin via WhatsApp"
+      >
+        <MessageCircle size={28} />
+        <span className="hidden md:inline font-semibold pr-2 group-hover:block overflow-hidden max-w-0 group-hover:max-w-xs transition-all duration-300 ease-in-out whitespace-nowrap">
+          Chat Admin
+        </span>
+      </a>
+    </div>
+  );
+}
